@@ -29,6 +29,8 @@ from homeassistant.components.media_player.const import MEDIA_TYPE_MUSIC
 
 from .const import (
     ATTR_MEDIA_LYRICS,
+    ATTR_MEDIA_LYRICS_CURRENT,
+    ATTR_MEDIA_STATE_TIME
 )
 
 from .helpers import (
@@ -107,8 +109,10 @@ class NeteaseLyricsSensor(Entity):
         state_attrs = {
             ATTR_MEDIA_ARTIST: self._genius.artist,
             ATTR_MEDIA_TITLE: self._genius.title,
-            ATTR_MEDIA_LYRICS: self._genius.lyrics,
             ATTR_MEDIA_POSITION: self._genius.position,
+            ATTR_MEDIA_STATE_TIME: self._genius.state_time,
+            ATTR_MEDIA_LYRICS_CURRENT: self._genius.lyrics_current,
+            ATTR_MEDIA_LYRICS: self._genius.lyrics,
             # TODO: add URL, Album Art
         }
         return state_attrs

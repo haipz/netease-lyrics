@@ -39,6 +39,8 @@ SERVICE_SCHEMA = vol.Schema({
         vol.Required(ATTR_MEDIA_ARTIST): cv.string,
         vol.Required(ATTR_MEDIA_TITLE): cv.string,
         vol.Required(ATTR_MEDIA_POSITION): cv.string,
+        vol.Required(ATTR_MEDIA_LYRICS_CURRENT): cv.string,
+        vol.Required(ATTR_MEDIA_LYRICS): cv.string,
         vol.Required(CONF_ENTITY_ID): vol.Any(cv.entity_id, None),
     })
 }, extra=vol.ALLOW_EXTRA)
