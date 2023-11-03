@@ -9,6 +9,7 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_ARTIST,
     ATTR_MEDIA_TITLE,
     ATTR_MEDIA_POSITION,
+    ATTR_MEDIA_DURATION,
 )
 from homeassistant.const import (
     CONF_URL,
@@ -57,6 +58,7 @@ async def async_setup(hass, config):
         artist = data[ATTR_MEDIA_ARTIST]
         title = data[ATTR_MEDIA_TITLE]
         genius.position = data[ATTR_MEDIA_POSITION]
+        genius.duration = data[ATTR_MEDIA_DURATION]
         entity_id = data.get(CONF_ENTITY_ID)
         state = data.get('state')
 
@@ -80,9 +82,10 @@ async def async_setup(hass, config):
             ATTR_MEDIA_ARTIST: genius.artist,
             ATTR_MEDIA_TITLE: genius.title,
             ATTR_MEDIA_POSITION: genius.position,
+            ATTR_MEDIA_DURATION: genius.duration,
+            ATTR_MEDIA_STATE_TIME: genius.state_time,
             ATTR_MEDIA_LYRICS_CURRENT: genius.lyrics_current,
             ATTR_MEDIA_LYRICS: genius.lyrics,
-            ATTR_MEDIA_STATE_TIME: genius.state_time,
         })
 
         # set attributes

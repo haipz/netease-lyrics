@@ -88,6 +88,8 @@ class NeteaseLyricsSensor(Entity):
     def __init__(self, hass, genius, media_entity_id):
         """Initialize the sensor"""
         self._genius = genius
+        self._artist = None
+        self._title = None
         self._media_player_id = media_entity_id
         self._name = f'{split_entity_id(media_entity_id)[1]} Lyrics'
         self._state = STATE_OFF
@@ -123,7 +125,7 @@ class NeteaseLyricsSensor(Entity):
 
     def update(self):
         """Fetch new state data for the sensor"""
-        self._genius.fetch_lyrics()
+        self._genius.fetch_lyrics(self._artist, self._title)
 
     def handle_state_change(self, entity_id, old_state, new_state):
         # ensure tracking entity_id
@@ -141,17 +143,13 @@ class NeteaseLyricsSensor(Entity):
                 and new_state.attributes.get(ATTR_MEDIA_DURATION):
             return
         
-        # always update position
+        # always update position and duration
         self._genius.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
-        
-        # if artist and title not changed, no need to update
-        if (self._genius.artist == new_state.attributes.get(ATTR_MEDIA_ARTIST) \
-                and self._genius.title == new_state.attributes.get(ATTR_MEDIA_TITLE)):
-            return
+        self._genius.duration = new_state.attributes.get(ATTR_MEDIA_DURATION)
         
         # all checks out
-        self._genius.artist = new_state.attributes.get(ATTR_MEDIA_ARTIST)
-        self._genius.title = new_state.attributes.get(ATTR_MEDIA_TITLE)
+        self._artist = new_state.attributes.get(ATTR_MEDIA_ARTIST)
+        self._title = new_state.attributes.get(ATTR_MEDIA_TITLE)
         self._state = STATE_ON
 
         # trigger update
@@ -163,7 +161,8 @@ class NeteaseLyrics:
         self.__title = None
         self.__lyrics = "[00:00.00]搜索歌词中[23:59.59]"
         self.__api_base = api_base
-        self.__position = -1
+        self.__position = 0
+        self.__duration = 0
         self.__state_time = datetime.now()
 
     @property
@@ -196,6 +195,14 @@ class NeteaseLyrics:
             _LOGGER.debug(f"Position set to: {self.__position}")
 
     @property
+    def duration(self):
+        return self.__duration
+
+    @duration.setter
+    def duration(self, new_duration):
+        self.__duration = new_duration
+
+    @property
     def state_time(self):
         return self.__state_time
 
@@ -213,6 +220,9 @@ class NeteaseLyrics:
         return "无法获取当前歌词"
 
     def fetch_lyrics(self, artist=None, title=None):
+        if self.__artist == artist and self.__title == title:
+            return True
+
         if artist:
             self.__artist = artist
         if title:

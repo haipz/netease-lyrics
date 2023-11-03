@@ -16,7 +16,7 @@ search_lyrics:
       example: 1
     media_state_time:
       description: Position update time.
-      example: "2020-02-20T20:20:20.000000+00:00"
+      example: "2020-02-20T20:20:20.000000"
     media_lyrics:
       description: Lyrics of the song.
       example: ""
