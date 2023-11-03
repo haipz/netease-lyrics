@@ -222,18 +222,12 @@ class NeteaseLyrics:
     def fetch_lyrics(self, artist=None, title=None):
         if self.__artist == artist and self.__title == title:
             return True
-
-        if artist:
-            self.__artist = artist
-        if title:
-            self.__title = title
-
-        if self.__artist is None or self.__title is None:
+        if artist is None or artist is None:
             _LOGGER.debug("Missing artist and/or title")
-            return
+            return False
 
-        _LOGGER.info(f"Search lyrics for artist='{self.__artist}' and title='{self.__title}'")
-        search_url = self.__api_base + f"/search?limit=3&keywords={self.__title} {self.__artist}"
+        _LOGGER.info(f"Search lyrics for artist='{artist}' and title='{title}'")
+        search_url = self.__api_base + f"/search?limit=3&keywords={title} {artist}"
         search_res = requests.get(search_url)
         if search_res.status_code == 200:
             id = search_res.json()['result']['songs'][0]['id']
@@ -244,6 +238,10 @@ class NeteaseLyrics:
             if lyric_res.status_code == 200:
                 _LOGGER.debug(f"Found lyrics: {lyric_res.json()['lrc']['lyric']}")
                 self.__lyrics = lyric_res.json()['lrc']['lyric']
+                if artist:
+                    self.__artist = artist
+                if title:
+                    self.__title = title
                 return True
             else:
                 self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
