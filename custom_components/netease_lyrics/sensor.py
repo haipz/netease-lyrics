@@ -194,12 +194,12 @@ class NeteaseLyrics:
                 return subs[i - 1].text + subs[i].text
 
     def fetch_lyrics(self, position=None, artist=None, title=None):
-        if artist == self.__artist and title == self.__title:
-            return
-        
         if position and position != self.__position:
             self.__position = position
             self.__position_time = datetime.now()
+
+        if artist == self.__artist and title == self.__title:
+            return self.lyrics
         if artist:
             self.__artist = artist
         if title:
