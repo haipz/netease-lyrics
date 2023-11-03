@@ -141,6 +141,11 @@ class NeteaseLyricsSensor(Entity):
         # media title changed?
         if self._genius.title == new_state.attributes.get(ATTR_MEDIA_TITLE):
             return
+        
+        # position changed?
+        if self._genius.position != new_state.attributes.get(ATTR_MEDIA_POSITION):
+            self.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
+            self.state_time = datetime.now()
 
         # all checks out..update artist and title to fetch
         self._genius.artist = new_state.attributes.get(ATTR_MEDIA_ARTIST)
@@ -154,10 +159,10 @@ class NeteaseLyrics:
     def __init__(self, api_base):
         self.__artist = None
         self.__title = None
-        self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
+        self.__lyrics = "[00:00.00]搜索歌词中[23:59.59]"
         self.__api_base = api_base
         self.__position = 0
-        self.__position_time = datetime.now()
+        self.__state_time = datetime.now()
 
     @property
     def artist(self):
@@ -187,9 +192,18 @@ class NeteaseLyrics:
         _LOGGER.debug(f"Position set to: {self.__position}")
 
     @property
+    def state_time(self):
+        return self.__state_time
+
+    @state_time.setter
+    def state_time(self, new_state_time):
+        self.__state_time = new_state_time
+        _LOGGER.debug(f"Position set to: {self.__state_time}")
+
+    @property
     def lyrics(self):
         subs = pylrc.parse(self.__lyrics)
-        position = self.__position + (datetime.now() - self.__position_time).seconds
+        position = self.__position + (datetime.now() - self.__state_time).seconds
         for i in range(1, len(subs)):
             if subs[i].time >= position:
                 return subs[i - 1].text + subs[i].text
@@ -198,7 +212,7 @@ class NeteaseLyrics:
     def fetch_lyrics(self, position=None, artist=None, title=None):
         if position and position != self.__position:
             self.__position = position
-            self.__position_time = datetime.now()
+            self.__state_time = datetime.now()
 
         if artist == self.__artist and title == self.__title:
             return self.lyrics
@@ -242,4 +256,4 @@ class NeteaseLyrics:
     def reset(self):
         self.__artist = None
         self.__title = None
-        self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
+        self.__lyrics = "[00:00.00]搜索歌词中[23:59.59]"
