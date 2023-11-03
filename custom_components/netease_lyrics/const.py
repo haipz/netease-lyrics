@@ -1,6 +1,6 @@
-"""Constants for the Genius Lyrics integration."""
+"""Constants for the Netease Lyrics integration."""
 
-DOMAIN = 'genius_lyrics'
+DOMAIN = 'netease_lyrics'
 
 ATTR_MEDIA_LYRICS = 'media_lyrics'
 

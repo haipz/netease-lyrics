@@ -1,13 +1,14 @@
-"""Sensor platform for the Genius Lyrics integration."""
+"""Sensor platform for the Netease Lyrics integration."""
 
 import logging
+import requests
 
 import voluptuous as vol
 from homeassistant.helpers.config_validation import entities_domain, split_entity_id
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.const import (
-    CONF_ACCESS_TOKEN,
+    CONF_API_BASE,
     CONF_ENTITIES,
     STATE_ON,
     STATE_OFF,
@@ -40,7 +41,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if discovery_info is None:
         return
 
-    access_token = discovery_info.get(CONF_ACCESS_TOKEN)
+    api_base = discovery_info.get(CONF_API_BASE)
     conf_entities = discovery_info.get(CONF_ENTITIES)
 
     # validate the entities exist
@@ -62,11 +63,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         _LOGGER.debug(f"Monitoring media players: {monitored_entities}")
 
     # create sensors, one for each monitored entity
-    genius = GeniusLyrics(access_token)
+    genius = NeteaseLyrics(api_base)
     sensors = []
     for media_player in monitored_entities:
         # create sensor
-        genius_sensor = GeniusLyricsSensor(hass, genius, media_player)
+        genius_sensor = NeteaseLyricsSensor(hass, genius, media_player)
         # hook media_player to sensor
         async_track_state_change(hass, media_player, genius_sensor.handle_state_change)
         # add new sensor to list
@@ -79,7 +80,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     return True
 
 
-class GeniusLyricsSensor(Entity):
+class NeteaseLyricsSensor(Entity):
     """Representation of a Sensor."""
 
     def __init__(self, hass, genius, media_entity_id):
@@ -148,19 +149,12 @@ class GeniusLyricsSensor(Entity):
         self.async_schedule_update_ha_state(True)
 
 
-class GeniusLyrics:
-    def __init__(self, access_token, genius=None):
+class NeteaseLyrics:
+    def __init__(self, api_base):
         self.__artist = None
         self.__title = None
         self.__lyrics = None
-        self.__genius = None
-
-        from lyricsgenius import Genius
-        # use or create Genius class
-        if isinstance(genius, Genius):
-            self.__genius = genius
-        else:
-            self.__genius = Genius(access_token, skip_non_songs=True)
+        self.__api_base = api_base
 
     @property
     def artist(self):
@@ -208,10 +202,11 @@ class GeniusLyrics:
             return
 
         _LOGGER.info(f"Search lyrics for artist='{self.__artist}' and title='{self.__title}'")
-
-        song = self.__genius.search_song(self.__title, self.__artist, get_full_info=False)
-        if song:
-            _LOGGER.debug(f"Found song: artist = {song.artist}, title = {song.title}")
+        search_url = self.__api_base + f"/search?limit=3&keywords={self.__title} {self.__artist}"
+        search_res = requests.get(search_url)
+        if search_res.status_code == 200:
+            id = search_res.json()['result']['songs'][0]['id']
+            _LOGGER.debug(f"Found song: {id}")
 
             # FIXME: need to avoid incorrectly found song lyrics
             # for now..comparing artist names suffices. Titles may differ (e.g. 'feat. John Doe')
@@ -221,9 +216,15 @@ class GeniusLyrics:
             # if str(self.__artist).lower() == str(song.artist).lower() \
             #         or str(song.title).lower() in str(self.__title).lower():
 
-            self.__title = song.title
-            self.__lyrics = song.lyrics
-            return True
+            lyric_url = self.__api_base + f"/lyric?id={id}"
+            lyric_res = requests.get(lyric_url)
+            if lyric_res.status_code == 200:
+                _LOGGER.debug(f"Found lyrics: {lyric_res.json()['lrc']['lyric']}")
+                self.__lyrics = lyric_res.json()['lrc']['lyric']
+                return True
+            else:
+                self.__lyrics = "Lyrics not found"
+                return False
         else:
             self.__lyrics = "Lyrics not found"
             return False

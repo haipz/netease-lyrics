@@ -1,4 +1,4 @@
-"""The Genius Lyrics integration."""
+"""The Netease Lyrics integration."""
 
 import logging
 import voluptuous as vol
@@ -10,7 +10,7 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_TITLE,
 )
 from homeassistant.const import (
-    CONF_ACCESS_TOKEN,
+    CONF_API_BASE,
     CONF_ENTITIES,
     CONF_ENTITY_ID,
     EVENT_HOMEASSISTANT_START,
@@ -22,13 +22,12 @@ from .const import (
     SERVICE_SEARCH_LYRICS,
 )
 
-
 _LOGGER = logging.getLogger(__name__)
 
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
-        vol.Required(CONF_ACCESS_TOKEN): cv.string,
+        vol.Required(CONF_API_BASE): cv.string,
         vol.Optional(CONF_ENTITIES): vol.Any(cv.entity_ids, None),
     })
 }, extra=vol.ALLOW_EXTRA)
@@ -45,7 +44,7 @@ SERVICE_SCHEMA = vol.Schema({
 
 async def async_setup(hass, config):
     """Setup is called when Home Assistant is loading our component."""
-    genius_access_token = config[DOMAIN][CONF_ACCESS_TOKEN]
+    netease_api_base = config[DOMAIN][CONF_API_BASE]
 
     @callable
     def search_lyrics(call):
@@ -69,8 +68,8 @@ async def async_setup(hass, config):
             attrs = {}
 
         # fetch lyrics
-        from .sensor import GeniusLyrics
-        genius = GeniusLyrics(genius_access_token)
+        from .sensor import NeteaseLyrics
+        genius = NeteaseLyrics(netease_api_base)
         genius.fetch_lyrics(artist, title)
         attrs.update({
             ATTR_MEDIA_ARTIST: genius.artist,
@@ -92,7 +91,7 @@ async def async_setup(hass, config):
 
         # setup platform(s)
         sensor_config = {
-            CONF_ACCESS_TOKEN: genius_access_token,
+            CONF_API_BASE: netease_api_base,
             CONF_ENTITIES: config[DOMAIN][CONF_ENTITIES]
         }
         hass.async_create_task(async_load_platform(hass, 'sensor', DOMAIN, sensor_config, config))

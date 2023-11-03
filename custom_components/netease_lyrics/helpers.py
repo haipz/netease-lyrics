@@ -1,10 +1,8 @@
-"""Helpers for the Genius Lyrics integration"""
+"""Helpers for the Netease Lyrics integration"""
 
 import logging
 
-
 _LOGGER = logging.getLogger(__name__)
-
 
 def entities_exist(hass, entities):
     """Returns list of entities that exist in hass"""

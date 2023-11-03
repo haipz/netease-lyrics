@@ -1,4 +1,4 @@
-# genius-lyrics
+# netease-lyrics
 
 Custom component for Home Assistant to fetch song lyrics from [Genius](https://genius.com)
 by tracking media player entities.  Component allows service calls for custom automations.
@@ -7,13 +7,13 @@ by tracking media player entities.  Component allows service calls for custom au
 ## Installation
 
 ### With HACS
-1. Open HACS Settings and add this repository (https://github.com/robert-alfaro/genius-lyrics)
+1. Open HACS Settings and add this repository (https://github.com/robert-alfaro/netease-lyrics)
 as a Custom Repository (use **Integration** as the category).
-2. The `Genius Lyrics` page should automatically load (or find it in the HACS Store).
+2. The `Netease Lyrics` page should automatically load (or find it in the HACS Store).
 3. Click `Install`
 
 ### Manual
-Copy the `genius_lyrics` directory from `custom_components` in this repository, and place inside your
+Copy the `netease_lyrics` directory from `custom_components` in this repository, and place inside your
 Home Assistant installation's `custom_components` directory.
 
 
@@ -24,12 +24,12 @@ Home Assistant installation's `custom_components` directory.
 	   and Redirect URL (this won't be used).
 	3. Once you've saved the new client, click the button to generate a `Client Access Token` (record this somewhere safe).
 2. Install this integration
-3. Enable Genius Lyrics in `configuration.yaml` by adding the following (*substitute your access token from step 1*):
+3. Enable Netease Lyrics in `configuration.yaml` by adding the following (*substitute your access token from step 1*):
 
 **NOTE: Media player `foobar` is just an example. Replace it with your media player's entity name.**
 
 ```yaml
-genius_lyrics:
+netease_lyrics:
   access_token: "3SxSxqZJOtz5fYlkFXv-12E-mgripD0XM7v0L091P3Kz22wT9ReCRNg0qmrYeveG"
   entities:
     - media_player.foobar
