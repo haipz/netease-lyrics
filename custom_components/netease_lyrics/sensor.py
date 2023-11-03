@@ -112,6 +112,7 @@ class NeteaseLyricsSensor(Entity):
             ATTR_MEDIA_ARTIST: self._genius.artist,
             ATTR_MEDIA_TITLE: self._genius.title,
             ATTR_MEDIA_POSITION: self._genius.position,
+            ATTR_MEDIA_DURATION: self._genius.duration,
             ATTR_MEDIA_STATE_TIME: self._genius.state_time,
             ATTR_MEDIA_LYRICS_CURRENT: self._genius.lyrics_current,
             ATTR_MEDIA_LYRICS: self._genius.lyrics,
