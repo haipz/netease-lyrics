@@ -153,7 +153,7 @@ class NeteaseLyrics:
     def __init__(self, api_base):
         self.__artist = None
         self.__title = None
-        self.__lyrics = None
+        self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
         self.__api_base = api_base
         self.__position_time = datetime.now()
 
@@ -230,10 +230,10 @@ class NeteaseLyrics:
                 self.__lyrics = lyric_res.json()['lrc']['lyric']
                 return True
             else:
-                self.__lyrics = "Lyrics not found"
+                self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
                 return False
         else:
-            self.__lyrics = "Lyrics not found"
+            self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
             return False
 
     def reset(self):
