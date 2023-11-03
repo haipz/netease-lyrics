@@ -1,6 +1,6 @@
 search_lyrics:
   description: >
-    Fetch song lyrics from Genius.com
+    Fetch song lyrics from Netease
   fields:
     entity_id:
       description: Entity ID to write lyrics to.
@@ -11,3 +11,6 @@ search_lyrics:
     media_title:
       description: Name of the Song.
       example: 'Mind of a King'
+    media_position:
+      description: Position of the Song player.
+      example: 1

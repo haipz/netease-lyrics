@@ -2,6 +2,9 @@
 
 import logging
 import requests
+import re
+import pylrc
+from datetime import datetime
 
 import voluptuous as vol
 from homeassistant.helpers.config_validation import entities_domain, split_entity_id
@@ -21,6 +24,7 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_DURATION,
     ATTR_MEDIA_TITLE,
     ATTR_MEDIA_ARTIST,
+    ATTR_MEDIA_POSITION,
 )
 from homeassistant.components.media_player.const import MEDIA_TYPE_MUSIC
 
@@ -32,9 +36,7 @@ from .helpers import (
     entities_exist,
 )
 
-
 _LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the sensor platform."""
@@ -78,7 +80,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     # platform setup successfully
     return True
-
 
 class NeteaseLyricsSensor(Entity):
     """Representation of a Sensor."""
@@ -148,13 +149,13 @@ class NeteaseLyricsSensor(Entity):
         # trigger update
         self.async_schedule_update_ha_state(True)
 
-
 class NeteaseLyrics:
     def __init__(self, api_base):
         self.__artist = None
         self.__title = None
         self.__lyrics = None
         self.__api_base = api_base
+        self.__position_time = datetime.now()
 
     @property
     def artist(self):
@@ -171,27 +172,33 @@ class NeteaseLyrics:
 
     @title.setter
     def title(self, new_title):
-        # filter out terms from title
-        # TODO: move to CONFIG_SCHEMA
-        exclude_terms = [
-            '(explicit',
-            '(feat',
-        ]
-        _new_title = str(new_title).lower()
-        for term in exclude_terms:
-            if term in _new_title:
-                pos = _new_title.find(term)
-                self.__title = new_title[0:pos].strip()
-                break
-        else:
-            self.__title = new_title
+        self.__title = new_title
         _LOGGER.debug(f"Title set to: {self.__title}")
 
     @property
-    def lyrics(self):
-        return self.__lyrics
+    def position(self):
+        return self.__position
 
-    def fetch_lyrics(self, artist=None, title=None):
+    @position.setter
+    def position(self, new_position):
+        self.__title = new_position
+        _LOGGER.debug(f"Position set to: {self.__position}")
+
+    @property
+    def lyrics(self):
+        subs = pylrc.parse(self.__lyrics)
+        position = self.__position + (datetime.now() - self.__position_time).seconds
+        for i in range(1, len(subs)):
+            if subs[i].time >= position:
+                return subs[i - 1].text + subs[i].text
+
+    def fetch_lyrics(self, position=None, artist=None, title=None):
+        if artist == self.__artist and title == self.__title:
+            return
+        
+        if position and position != self.__position:
+            self.__position = position
+            self.__position_time = datetime.now()
         if artist:
             self.__artist = artist
         if title:

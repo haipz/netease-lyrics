@@ -2,7 +2,7 @@
   "domain": "netease_lyrics",
   "name": "Netease Lyrics",
   "documentation": "https://github.com/haipz/netease-lyrics",
-  "requirements": ["requests"],
+  "requirements": ["requests", "pylrc"],
   "dependencies": [],
   "codeowners": ["@haipz"],
   "version": "0.0.1"
