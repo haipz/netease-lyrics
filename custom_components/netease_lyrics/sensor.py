@@ -138,18 +138,15 @@ class NeteaseLyricsSensor(Entity):
                 and new_state.attributes.get(ATTR_MEDIA_DURATION):
             return
 
-        # media title changed?
-        if self._genius.title == new_state.attributes.get(ATTR_MEDIA_TITLE):
+        # position changed?
+        if self._genius.position == new_state.attributes.get(ATTR_MEDIA_POSITION):
             return
         
-        # position changed?
-        if self._genius.position != new_state.attributes.get(ATTR_MEDIA_POSITION):
-            self.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
-            self.state_time = datetime.now()
-
         # all checks out..update artist and title to fetch
         self._genius.artist = new_state.attributes.get(ATTR_MEDIA_ARTIST)
         self._genius.title = new_state.attributes.get(ATTR_MEDIA_TITLE)
+        self._genius.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
+        self._genius.state_time = datetime.now()
         self._state = STATE_ON
 
         # trigger update
@@ -161,7 +158,7 @@ class NeteaseLyrics:
         self.__title = None
         self.__lyrics = "[00:00.00]搜索歌词中[23:59.59]"
         self.__api_base = api_base
-        self.__position = 0
+        self.__position = -1
         self.__state_time = datetime.now()
 
     @property
