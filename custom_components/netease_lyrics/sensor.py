@@ -155,6 +155,7 @@ class NeteaseLyrics:
         self.__title = None
         self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
         self.__api_base = api_base
+        self.__position = 0
         self.__position_time = datetime.now()
 
     @property
@@ -181,7 +182,7 @@ class NeteaseLyrics:
 
     @position.setter
     def position(self, new_position):
-        self.__title = new_position
+        self.__position = new_position
         _LOGGER.debug(f"Position set to: {self.__position}")
 
     @property
