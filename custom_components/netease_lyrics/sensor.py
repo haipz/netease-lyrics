@@ -186,7 +186,7 @@ class NeteaseLyrics:
 
     @property
     def position(self):
-        return self.__position
+        return self.__position + (datetime.now() - self.__state_time).seconds
 
     @position.setter
     def position(self, new_position):
@@ -216,7 +216,7 @@ class NeteaseLyrics:
         subs = pylrc.parse(self.__lyrics)
         position = self.__position + (datetime.now() - self.__state_time).seconds
         for i in range(1, len(subs)):
-            if subs[i].time >= position:
+            if subs[i].time >= self.position:
                 return subs[i - 1].text + subs[i].text
         return "无法获取当前歌词"
 
@@ -239,10 +239,8 @@ class NeteaseLyrics:
             if lyric_res.status_code == 200:
                 _LOGGER.debug(f"Found lyrics: {lyric_res.json()['lrc']['lyric']}")
                 self.__lyrics = lyric_res.json()['lrc']['lyric']
-                if artist:
-                    self.__artist = artist
-                if title:
-                    self.__title = title
+                self.__artist = artist
+                self.__title = title
                 return True
             else:
                 self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
