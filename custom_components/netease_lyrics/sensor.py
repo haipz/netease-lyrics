@@ -8,7 +8,7 @@ from homeassistant.helpers.config_validation import entities_domain, split_entit
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.const import (
-    CONF_API_BASE,
+    CONF_URL,
     CONF_ENTITIES,
     STATE_ON,
     STATE_OFF,
@@ -41,7 +41,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if discovery_info is None:
         return
 
-    api_base = discovery_info.get(CONF_API_BASE)
+    api_base = discovery_info.get(CONF_URL)
     conf_entities = discovery_info.get(CONF_ENTITIES)
 
     # validate the entities exist

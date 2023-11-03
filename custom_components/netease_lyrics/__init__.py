@@ -10,7 +10,7 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_TITLE,
 )
 from homeassistant.const import (
-    CONF_API_BASE,
+    CONF_URL,
     CONF_ENTITIES,
     CONF_ENTITY_ID,
     EVENT_HOMEASSISTANT_START,
@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
-        vol.Required(CONF_API_BASE): cv.string,
+        vol.Required(CONF_URL): cv.string,
         vol.Optional(CONF_ENTITIES): vol.Any(cv.entity_ids, None),
     })
 }, extra=vol.ALLOW_EXTRA)
@@ -44,7 +44,7 @@ SERVICE_SCHEMA = vol.Schema({
 
 async def async_setup(hass, config):
     """Setup is called when Home Assistant is loading our component."""
-    netease_api_base = config[DOMAIN][CONF_API_BASE]
+    netease_api_base = config[DOMAIN][CONF_URL]
 
     @callable
     def search_lyrics(call):
@@ -91,7 +91,7 @@ async def async_setup(hass, config):
 
         # setup platform(s)
         sensor_config = {
-            CONF_API_BASE: netease_api_base,
+            CONF_URL: netease_api_base,
             CONF_ENTITIES: config[DOMAIN][CONF_ENTITIES]
         }
         hass.async_create_task(async_load_platform(hass, 'sensor', DOMAIN, sensor_config, config))
