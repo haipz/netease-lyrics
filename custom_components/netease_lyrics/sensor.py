@@ -2,7 +2,6 @@
 
 import logging
 import requests
-import re
 import pylrc
 from datetime import datetime
 
@@ -21,10 +20,10 @@ from homeassistant.const import (
 )
 from homeassistant.components.media_player import (
     ATTR_MEDIA_CONTENT_TYPE,
+    ATTR_MEDIA_POSITION,
     ATTR_MEDIA_DURATION,
     ATTR_MEDIA_TITLE,
     ATTR_MEDIA_ARTIST,
-    ATTR_MEDIA_POSITION,
 )
 from homeassistant.components.media_player.const import MEDIA_TYPE_MUSIC
 
@@ -127,7 +126,7 @@ class NeteaseLyricsSensor(Entity):
         if entity_id != self._media_player_id:
             return
 
-        if new_state.state not in [STATE_PLAYING, STATE_PAUSED, STATE_BUFFERING]:
+        if new_state.state not in [STATE_PLAYING]: # , STATE_PAUSED, STATE_BUFFERING]:
             self._genius.reset()
             self._state = STATE_OFF
             self.async_schedule_update_ha_state(True)
@@ -137,16 +136,18 @@ class NeteaseLyricsSensor(Entity):
         if new_state.attributes.get(ATTR_MEDIA_CONTENT_TYPE) != MEDIA_TYPE_MUSIC \
                 and new_state.attributes.get(ATTR_MEDIA_DURATION):
             return
-
-        # position changed?
-        if self._genius.position == new_state.attributes.get(ATTR_MEDIA_POSITION):
+        
+        # always update position
+        self._genius.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
+        
+        # if artist and title not changed, no need to update
+        if (self._genius.artist == new_state.attributes.get(ATTR_MEDIA_ARTIST) \
+                and self._genius.title == new_state.attributes.get(ATTR_MEDIA_TITLE)):
             return
         
-        # all checks out..update artist and title to fetch
+        # all checks out
         self._genius.artist = new_state.attributes.get(ATTR_MEDIA_ARTIST)
         self._genius.title = new_state.attributes.get(ATTR_MEDIA_TITLE)
-        self._genius.position = new_state.attributes.get(ATTR_MEDIA_POSITION)
-        self._genius.state_time = datetime.now()
         self._state = STATE_ON
 
         # trigger update
@@ -185,34 +186,29 @@ class NeteaseLyrics:
 
     @position.setter
     def position(self, new_position):
-        self.__position = new_position
-        _LOGGER.debug(f"Position set to: {self.__position}")
+        if new_position and new_position != self.__position:
+            self.__position = new_position
+            self.__state_time = datetime.now()
+            _LOGGER.debug(f"Position set to: {self.__position}")
 
     @property
     def state_time(self):
         return self.__state_time
 
-    @state_time.setter
-    def state_time(self, new_state_time):
-        self.__state_time = new_state_time
-        _LOGGER.debug(f"Position set to: {self.__state_time}")
-
     @property
     def lyrics(self):
+        return self.__lyrics
+
+    @property
+    def lyrics_current(self):
         subs = pylrc.parse(self.__lyrics)
         position = self.__position + (datetime.now() - self.__state_time).seconds
         for i in range(1, len(subs)):
             if subs[i].time >= position:
                 return subs[i - 1].text + subs[i].text
-        return self.__lyrics
+        return "无法获取当前歌词"
 
-    def fetch_lyrics(self, position=None, artist=None, title=None):
-        if position and position != self.__position:
-            self.__position = position
-            self.__state_time = datetime.now()
-
-        if artist == self.__artist and title == self.__title:
-            return self.lyrics
+    def fetch_lyrics(self, artist=None, title=None):
         if artist:
             self.__artist = artist
         if title:
@@ -229,14 +225,6 @@ class NeteaseLyrics:
             id = search_res.json()['result']['songs'][0]['id']
             _LOGGER.debug(f"Found song: {id}")
 
-            # FIXME: need to avoid incorrectly found song lyrics
-            # for now..comparing artist names suffices. Titles may differ (e.g. 'feat. John Doe')
-            # if self.__title == song.title:
-            #     _LOGGER.debug(f"Found lyrics: {song.lyrics}")
-
-            # if str(self.__artist).lower() == str(song.artist).lower() \
-            #         or str(song.title).lower() in str(self.__title).lower():
-
             lyric_url = self.__api_base + f"/lyric?id={id}"
             lyric_res = requests.get(lyric_url)
             if lyric_res.status_code == 200:
@@ -247,10 +235,10 @@ class NeteaseLyrics:
                 self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
                 return False
         else:
-            self.__lyrics = "[00:00.00]未找到歌词[23:59.59]"
+            self.__lyrics = "[00:00.00]未找到歌曲[23:59.59]"
             return False
 
     def reset(self):
         self.__artist = None
         self.__title = None
-        self.__lyrics = "[00:00.00]搜索歌词中[23:59.59]"
+        self.__lyrics = "[00:00.00]歌曲信息重置[23:59.59]"

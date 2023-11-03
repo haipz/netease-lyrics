@@ -19,6 +19,8 @@ from homeassistant.const import (
 
 from .const import (
     ATTR_MEDIA_LYRICS,
+    ATTR_MEDIA_LYRICS_CURRENT,
+    ATTR_MEDIA_STATE_TIME,
     DOMAIN,
     SERVICE_SEARCH_LYRICS,
 )
@@ -52,7 +54,7 @@ async def async_setup(hass, config):
         data = call.data
         artist = data[ATTR_MEDIA_ARTIST]
         title = data[ATTR_MEDIA_TITLE]
-        position = data[ATTR_MEDIA_POSITION]
+        genius.position = data[ATTR_MEDIA_POSITION]
         entity_id = data.get(CONF_ENTITY_ID)
         state = data.get('state')
 
@@ -71,12 +73,14 @@ async def async_setup(hass, config):
         # fetch lyrics
         from .sensor import NeteaseLyrics
         genius = NeteaseLyrics(netease_api_base)
-        genius.fetch_lyrics(artist, title, position)
+        genius.fetch_lyrics(artist, title)
         attrs.update({
             ATTR_MEDIA_ARTIST: genius.artist,
             ATTR_MEDIA_TITLE: genius.title,
             ATTR_MEDIA_POSITION: genius.position,
+            ATTR_MEDIA_LYRICS_CURRENT: genius.lyrics_current,
             ATTR_MEDIA_LYRICS: genius.lyrics,
+            ATTR_MEDIA_STATE_TIME: genius.state_time,
         })
 
         # set attributes

@@ -14,3 +14,6 @@ search_lyrics:
     media_position:
       description: Position of the Song player.
       example: 1
+    media_state_time:
+      description: Position update time.
+      example: "2020-02-20T20:20:20.000000+00:00"

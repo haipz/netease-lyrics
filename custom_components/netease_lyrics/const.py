@@ -4,4 +4,8 @@ DOMAIN = 'netease_lyrics'
 
 ATTR_MEDIA_LYRICS = 'media_lyrics'
 
-SERVICE_SEARCH_LYRICS = 'search_lyrics'
+ATTR_MEDIA_LYRICS_CURRENT = 'media_lyrics_current'
+
+ATTR_MEDIA_STATE_TIME = 'media_lyrics'
+
+SERVICE_SEARCH_LYRICS = 'media_state_time'
